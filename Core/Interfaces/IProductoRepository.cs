@@ -9,7 +9,7 @@ namespace Core.Interfaces
 {
     public interface IProductoRepository
     {
-        Task<IReadOnlyList<Producto>> getProducto();
+        Task<IReadOnlyList<Producto>> getProductos();
         Task<Producto> getProductoById(int id);
 
     }

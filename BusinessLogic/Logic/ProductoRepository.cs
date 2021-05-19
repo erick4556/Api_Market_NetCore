@@ -18,7 +18,7 @@ namespace BusinessLogic.Logic
             _context = context;
 
         }
-        public async Task<IReadOnlyList<Producto>> getProducto()
+        public async Task<IReadOnlyList<Producto>> getProductos()
         {
             //return await _context.Producto.ToListAsync();
             return await _context.Producto.Include(p => p.Marca).Include(p => p.Categoria).ToListAsync();//Consulta con la relación
