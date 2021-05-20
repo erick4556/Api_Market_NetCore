@@ -9,12 +9,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using WebApi.Dtos;
+using WebApi.Errors;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductoController : ControllerBase
+    
+    public class ProductoController : BaseApiController
     {
         //private readonly IProductoRepository _productoRepository;
         private readonly IGenericRepository<Producto> _productoRepository; //Para métodos genericos. La T se convertirá en la clase Producto
@@ -42,6 +42,11 @@ namespace WebApi.Controllers
             //return await _productoRepository.getByIdAsync(id);////Métodos genericos sin la relación
             var spec = new ProductoWithCategoriasAndMarcaSpecification(id);
             var producto = await _productoRepository.getByIdWithSpec(spec); //Métodos genericos. spec debe incluir la logica de la condicion de la consulta y tambien las relaciones entre las entidades
+
+            if (producto ==  null)
+            {
+                return NotFound(new CodeErrorResponse(404));
+            }
 
             return _mapper.Map<Producto, ProductoDto>(producto);//Quiero que la entidad se convierta a una clase Dto, el objeto que se va transformar es producto
         }
