@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WebApi.Dtos;
 
 namespace WebApi
 {
@@ -28,7 +29,7 @@ namespace WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddAutoMapper(typeof(MappingProfiles));
             services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));//Para generar un objeto IGenericRepository por cada request que se envie
 
             services.AddDbContext<MarketDbContext>(opt => {
