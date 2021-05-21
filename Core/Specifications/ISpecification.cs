@@ -9,8 +9,13 @@ namespace Core.Specifications
 {
     public interface ISpecification<T>
     {
-        Expression<Func<T, bool>> Criteria { get; }//Represnta la condición lógica que se va aplicar a una entidad y devuelve un bool
+        Expression<Func<T, bool>> Criteria { get; }//Representa la condición lógica que se va aplicar a una entidad y devuelve un bool
 
-        List<Expression<Func<T,object>>> Includes { get; }//Represnta las relaciones que se va aplicar a la entidad y devuelve un objeto
+        List<Expression<Func<T,object>>> Includes { get; }//Representa las relaciones que se va aplicar a la entidad y devuelve un objeto
+
+        Expression<Func<T,object>> OrderBy { get; } //Devuelve un objeto = object
+
+        Expression<Func<T,object>> OrderByDescending { get; }
+
     }
 }

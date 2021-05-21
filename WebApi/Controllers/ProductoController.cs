@@ -27,11 +27,11 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Producto>>> getProductos()
+        public async Task<ActionResult<List<Producto>>> getProductos(string sort, int? marca, int? categoria) //int? significa que es un valor opcional
         {
             //var productos = await _productoRepository.getProductos();
             //var productos = await _productoRepository.getAllAsync(); //Métodos genericos sin la relación
-            var spec = new ProductoWithCategoriasAndMarcaSpecification();
+            var spec = new ProductoWithCategoriasAndMarcaSpecification(sort, marca, categoria);
             var productos = await _productoRepository.getAllWithSpec(spec);
             return Ok(_mapper.Map<IReadOnlyList<Producto>, IReadOnlyList<ProductoDto>>(productos));
         }
