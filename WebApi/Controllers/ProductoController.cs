@@ -13,7 +13,7 @@ using WebApi.Errors;
 
 namespace WebApi.Controllers
 {
-    
+
     public class ProductoController : BaseApiController
     {
         //private readonly IProductoRepository _productoRepository;
@@ -27,23 +27,42 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Producto>>> getProductos(string sort, int? marca, int? categoria) //int? significa que es un valor opcional
+        public async Task<ActionResult<Pagination<Producto>>> getProductos([FromQuery] ProductoSpecificationParams productoParams) //FromQuery para decir que los parametros vienen desde url del endpoint
         {
             //var productos = await _productoRepository.getProductos();
             //var productos = await _productoRepository.getAllAsync(); //Métodos genericos sin la relación
-            var spec = new ProductoWithCategoriasAndMarcaSpecification(sort, marca, categoria);
+            var spec = new ProductoWithCategoriasAndMarcaSpecification(productoParams);
             var productos = await _productoRepository.getAllWithSpec(spec);
-            return Ok(_mapper.Map<IReadOnlyList<Producto>, IReadOnlyList<ProductoDto>>(productos));
+
+            var specCount = new ProductoForCountingSpecification(productoParams);
+            var totalProductos = await _productoRepository.countAsync(specCount); //Devuelve la cantidad de elemento
+
+            var rounded = Math.Ceiling(Convert.ToDecimal(totalProductos / productoParams.PageSize));
+            var totalPages = Convert.ToInt32(rounded); //Total de páginas a devolver
+
+            var data = _mapper.Map<IReadOnlyList<Producto>, IReadOnlyList<ProductoDto>>(productos);
+
+            //return Ok(_mapper.Map<IReadOnlyList<Producto>, IReadOnlyList<ProductoDto>>(productos));
+
+            return Ok(new Pagination<ProductoDto>
+            {
+                Count = totalProductos,
+                Data = data,
+                PageCount = totalPages,
+                PageIndex = productoParams.PageIndex,
+                PageSize = productoParams.PageSize
+            });
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProductoDto>> getProductoById(int id){
+        public async Task<ActionResult<ProductoDto>> getProductoById(int id)
+        {
             //return await _productoRepository.getProductoById(id);
             //return await _productoRepository.getByIdAsync(id);////Métodos genericos sin la relación
             var spec = new ProductoWithCategoriasAndMarcaSpecification(id);
             var producto = await _productoRepository.getByIdWithSpec(spec); //Métodos genericos. spec debe incluir la logica de la condicion de la consulta y tambien las relaciones entre las entidades
 
-            if (producto ==  null)
+            if (producto == null)
             {
                 return NotFound(new CodeErrorResponse(404));
             }

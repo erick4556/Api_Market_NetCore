@@ -9,18 +9,21 @@ namespace Core.Specifications
 {
     public class ProductoWithCategoriasAndMarcaSpecification : BaseSpecification<Producto>
     {
-        public ProductoWithCategoriasAndMarcaSpecification(string sort, int? marca, int? categoria) : 
-            base(x=>(!marca.HasValue || x.MarcaId == marca) && //base() para llamar al constructor de la clase padre
-                    (!categoria.HasValue || x.CategoriaId == categoria)
-            ) 
+        public ProductoWithCategoriasAndMarcaSpecification(ProductoSpecificationParams productoParams) :
+            base(x => (!productoParams.Marca.HasValue || x.MarcaId == productoParams.Marca) && //base() para llamar al constructor de la clase padre
+                    (!productoParams.Categoria.HasValue || x.CategoriaId == productoParams.Categoria)
+            )
         {
             AddInclude(p => p.Categoria);
             AddInclude(p => p.Marca);
 
+            //ApplyPaging(0, 5);//De la posición 0 trae 5 registros
 
-            if (!string.IsNullOrEmpty(sort))
+            ApplyPaging(productoParams.PageSize * (productoParams.PageIndex - 1), productoParams.PageSize);
+
+            if (!string.IsNullOrEmpty(productoParams.Sort))
             {
-                switch (sort)
+                switch (productoParams.Sort)
                 {
                     case "nombreAsc":
                         AddOrderBy(p => p.Nombre);
