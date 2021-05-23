@@ -10,7 +10,9 @@ namespace Core.Specifications
     public class ProductoWithCategoriasAndMarcaSpecification : BaseSpecification<Producto>
     {
         public ProductoWithCategoriasAndMarcaSpecification(ProductoSpecificationParams productoParams) :
-            base(x => (!productoParams.Marca.HasValue || x.MarcaId == productoParams.Marca) && //base() para llamar al constructor de la clase padre
+            base(x =>
+                    (string.IsNullOrEmpty(productoParams.Search) || x.Nombre.Contains(productoParams.Search)) && //Validar que el valor no sea null sino compara con la propiedad nombre el parámetro search
+                    (!productoParams.Marca.HasValue || x.MarcaId == productoParams.Marca) && //base() para llamar al constructor de la clase padre
                     (!productoParams.Categoria.HasValue || x.CategoriaId == productoParams.Categoria)
             )
         {

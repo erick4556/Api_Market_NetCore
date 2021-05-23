@@ -33,12 +33,23 @@ namespace WebApi
             services.AddAutoMapper(typeof(MappingProfiles));
             services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));//Para generar un objeto IGenericRepository por cada request que se envie
 
-            services.AddDbContext<MarketDbContext>(opt => {
+            services.AddDbContext<MarketDbContext>(opt =>
+            {
                 opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
 
             services.AddTransient<IProductoRepository, ProductoRepository>();
             services.AddControllers();
+
+            //Configuración para cors
+            services.AddCors(opt =>
+            {
+                opt.AddPolicy("CorsRule", rule =>
+                {
+                    rule.AllowAnyHeader().AllowAnyMethod().WithOrigins("*"); //WithOrigins("") Aqui se puede poner las ips que pueden acceder
+                });
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,6 +65,8 @@ namespace WebApi
             app.UseStatusCodePagesWithReExecute("/errors", "?code={0}"); //Le digo que parametro de error se imprima para el cliente
 
             app.UseRouting();
+
+            app.UseCors("CorsRule");//Uso el CorsRule definido
 
             app.UseAuthorization();
 
