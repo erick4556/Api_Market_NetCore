@@ -15,6 +15,7 @@ namespace WebApi.Dtos
                 .ForMember(p => p.CategoriaNombre, x => x.MapFrom(a => a.Categoria.Nombre))//La propiedad CategoriaNombre se va llenar desde la propiedad Categoria que pertenece a Producto. Almacena el nombre en p.CategoriaNombre
                 .ForMember(p => p.MarcaNombre, x => x.MapFrom(a => a.Marca.Nombre));
 
+            CreateMap<Direccion, DireccionDto>().ReverseMap();
         }
     }
 }

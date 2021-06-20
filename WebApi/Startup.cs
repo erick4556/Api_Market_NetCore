@@ -1,17 +1,22 @@
 using BusinessLogic.Data;
 using BusinessLogic.Logic;
+using Core.Entities;
 using Core.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using WebApi.Dtos;
 using WebApi.Middleware;
@@ -30,12 +35,36 @@ namespace WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            services.AddScoped<ITokenService, TokenService>();
+
+            var builder = services.AddIdentityCore<Usuario>();
+            builder = new IdentityBuilder(builder.UserType, builder.Services); //Para generar las tablas desde el modelo de identity core
+            builder.AddEntityFrameworkStores<SeguridadDbContext>();
+            builder.AddSignInManager <SignInManager<Usuario>>();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Token:Key"])), //Asingnando la palabra clave para descifrar el token
+                    ValidIssuer = Configuration["Token:Issuer"],
+                    ValidateIssuer = true,
+                    ValidateAudience = false //Para que cualquier cliente pueda consumir los endpoints
+                };
+            });
+
             services.AddAutoMapper(typeof(MappingProfiles));
             services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));//Para generar un objeto IGenericRepository por cada request que se envie
 
             services.AddDbContext<MarketDbContext>(opt =>
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            });
+
+            services.AddDbContext<SeguridadDbContext>(x =>
+            {
+                x.UseSqlServer(Configuration.GetConnectionString("IdentitySeguridad"));
             });
 
             services.AddTransient<IProductoRepository, ProductoRepository>();
@@ -68,6 +97,7 @@ namespace WebApi
 
             app.UseCors("CorsRule");//Uso el CorsRule definido
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
