@@ -70,5 +70,33 @@ namespace WebApi.Controllers
             return _mapper.Map<Producto, ProductoDto>(producto);//Quiero que la entidad se convierta a una clase Dto, el objeto que se va transformar es producto
         }
 
+        [HttpPost]
+        public async Task<ActionResult<Producto>> post(Producto producto)
+        {
+           var resultado = await _productoRepository.add(producto);
+             
+            if(resultado == 0)
+            {
+                throw new Exception("No se insertó el producto");
+            }
+
+            return Ok(producto);
+
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Producto>> put(int id, Producto producto)
+        {
+            producto.Id = id;
+            var resultado = await _productoRepository.update(producto);
+
+            if(resultado == 0)
+            {
+                throw new Exception("No se pudo actualizó el producto");
+            }
+
+            return Ok(producto);
+        }
+
     }
 }
