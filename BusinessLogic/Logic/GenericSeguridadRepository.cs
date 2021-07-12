@@ -1,7 +1,7 @@
 ﻿using BusinessLogic.Data;
-using Core.Entities;
 using Core.Interfaces;
 using Core.Specifications;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,19 +11,19 @@ using System.Threading.Tasks;
 
 namespace BusinessLogic.Logic
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : ClaseBase
+    public class GenericSeguridadRepository<T> : IGenericSeguridadRepository<T> where T : IdentityUser
     {
 
-        private readonly MarketDbContext _context;
+        private readonly SeguridadDbContext _context;
 
-        public GenericRepository(MarketDbContext context)
+        public GenericSeguridadRepository(SeguridadDbContext context)
         {
             _context = context;
         }
 
         public async Task<IReadOnlyList<T>> getAllAsync()
         {
-           return await _context.Set<T>().ToListAsync();
+            return await _context.Set<T>().ToListAsync();
         }
 
         public async Task<T> getByIdAsync(int id)
@@ -43,7 +43,7 @@ namespace BusinessLogic.Logic
 
         private IQueryable<T> applySpecification(ISpecification<T> spec)
         {
-           return SpecificationEvaluator<T>.getQuery(_context.Set<T>().AsQueryable(), spec);
+            return SeguridadSpecificationEvaluator<T>.getQuery(_context.Set<T>().AsQueryable(), spec);
         }
 
         public async Task<int> countAsync(ISpecification<T> spec)
@@ -54,7 +54,7 @@ namespace BusinessLogic.Logic
         public async Task<int> add(T entity)
         {
             _context.Set<T>().Add(entity);
-           return await _context.SaveChangesAsync();
+            return await _context.SaveChangesAsync();
         }
 
         public async Task<int> update(T entity)

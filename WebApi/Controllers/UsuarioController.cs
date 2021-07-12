@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
+using Core.Specifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -22,20 +23,24 @@ namespace WebApi.Controllers
         private readonly SignInManager<Usuario> _signInManager;
         private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
+        private readonly IPasswordHasher<Usuario> _passwordHasher;
+        private readonly IGenericSeguridadRepository<Usuario> _seguridadRepository;
 
-        public UsuarioController(UserManager<Usuario> userManager, SignInManager<Usuario> signInManager, ITokenService tokenService, IMapper mapper)
+        public UsuarioController(UserManager<Usuario> userManager, SignInManager<Usuario> signInManager, ITokenService tokenService, IMapper mapper, IPasswordHasher<Usuario> passwordHasher, IGenericSeguridadRepository<Usuario> seguridadRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
             _mapper = mapper;
+            _passwordHasher = passwordHasher;
+            _seguridadRepository = seguridadRepository;
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<UsuarioDto>> Login(LoginDto loginDto)
         {
             var usuario = await _userManager.FindByEmailAsync(loginDto.Email); //_userManager tiene acceso a todas las entidades de seguridad de la aplicacion roles, usuarios, tokens, etc
-            if(User == null)
+            if (User == null)
             {
                 return Unauthorized(new CodeErrorResponse(401));
             }
@@ -87,6 +92,68 @@ namespace WebApi.Controllers
 
         }
 
+
+        [HttpPut("actualizar/{id}")]
+        public async Task<ActionResult<UsuarioDto>> Actualizar(string id, RegistrarDto registrarDto)
+        {
+            var usuario = await _userManager.FindByIdAsync(id);
+            if (usuario == null)
+            {
+                return NotFound(new CodeErrorResponse(404, "El usuario no existe"));
+            }
+
+            usuario.Nombre = registrarDto.Nombre;
+            usuario.Apellido = registrarDto.Apellido;
+            usuario.PasswordHash = _passwordHasher.HashPassword(usuario, registrarDto.Password); //Para cifrar la contraseña que es enviada
+
+            var resultado = await _userManager.UpdateAsync(usuario);
+
+            if (resultado.Succeeded)
+            {
+                return new UsuarioDto
+                {
+                    Nombre = usuario.Nombre,
+                    Apellido = usuario.Apellido,
+                    Email = usuario.Email,
+                    Username = usuario.Email,
+                    Imagen = usuario.Imagen,
+                    Token = _tokenService.createToken(usuario)
+                };
+            }
+            else
+            {
+                return BadRequest(new CodeErrorResponse(400, "No se pudo actualizar el usuario"));
+            }
+
+        }
+
+        [HttpGet("pagination")]
+        public async Task<ActionResult<Pagination<UsuarioDto>>> GetUsuarios([FromQuery] UsuarioSpecificationParams usuarioParams)
+        {
+            var spec = new UsuarioSpecification(usuarioParams);
+            var usuarios = await _seguridadRepository.getAllWithSpec(spec); //Obtener los usuarios
+
+            var specCount = new UsuarioForCountingSpecification(usuarioParams);
+            var totalUsuarios = await _seguridadRepository.countAsync(specCount);
+
+            var rounded = Math.Ceiling(Convert.ToDecimal(totalUsuarios) / Convert.ToDecimal(usuarioParams.PageSize)); //Para redondear
+            var totalPages = Convert.ToInt32(rounded);
+
+            var data = _mapper.Map<IReadOnlyList<Usuario>, IReadOnlyList<UsuarioDto>>(usuarios);
+
+            return Ok(
+                    new Pagination<UsuarioDto>
+                    {
+                        Count = totalUsuarios,
+                        Data = data,
+                        PageCount = totalPages,
+                        PageIndex = usuarioParams.PageIndex,
+                        PageSize = usuarioParams.PageSize
+                    }
+                );
+
+        }
+
         [Authorize]
         [HttpGet]
         public async Task<ActionResult<UsuarioDto>> GetUsuario()
@@ -110,7 +177,7 @@ namespace WebApi.Controllers
         [HttpGet("emailvalido")]
         public async Task<ActionResult<bool>> ValidarEmail([FromQuery] string email)
         {
-         var usuario = await _userManager.FindByEmailAsync(email);
+            var usuario = await _userManager.FindByEmailAsync(email);
 
             if (usuario == null) return false;
 
@@ -135,7 +202,7 @@ namespace WebApi.Controllers
 
             usuario.Direccion = _mapper.Map<DireccionDto, Direccion>(direccion); //Objeto de tipo Direccion
 
-           var resultado = await _userManager.UpdateAsync(usuario);
+            var resultado = await _userManager.UpdateAsync(usuario);
 
             if (resultado.Succeeded) return Ok(_mapper.Map<Direccion, DireccionDto>(usuario.Direccion));
 

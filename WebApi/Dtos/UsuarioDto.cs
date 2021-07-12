@@ -15,6 +15,8 @@ namespace WebApi.Dtos
 
         public string Apellido { get; set; }
 
+        public string Imagen { get; set; }
+
         public string Token { get; set; }
 
     }

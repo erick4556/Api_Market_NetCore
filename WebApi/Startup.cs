@@ -57,6 +57,7 @@ namespace WebApi
 
             services.AddAutoMapper(typeof(MappingProfiles));
             services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));//Para generar un objeto IGenericRepository por cada request que se envie
+            services.AddScoped(typeof(IGenericSeguridadRepository<>), (typeof(GenericSeguridadRepository<>)));
 
             services.AddDbContext<MarketDbContext>(opt =>
             {

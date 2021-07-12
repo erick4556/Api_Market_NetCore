@@ -92,7 +92,7 @@ namespace WebApi.Controllers
 
             if(resultado == 0)
             {
-                throw new Exception("No se pudo actualizó el producto");
+                throw new Exception("No se pudo actualizar el producto");
             }
 
             return Ok(producto);
