@@ -12,19 +12,19 @@ using System.Threading.Tasks;
 
 namespace BusinessLogic.Logic
 {
-   public class TokenService : ITokenService
+    public class TokenService : ITokenService
     {
         private readonly SymmetricSecurityKey _key;
 
         private readonly IConfiguration _config;
 
-        public TokenService( IConfiguration config)
+        public TokenService(IConfiguration config)
         {
             _config = config;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Token:Key"]));
         }
 
-        public string createToken(Usuario usuario)
+        public string createToken(Usuario usuario, IList<string> roles)
         {
             var claims = new List<Claim> //Para indicarle lo que va a almacenar el token
             {
@@ -33,6 +33,14 @@ namespace BusinessLogic.Logic
                 new Claim(JwtRegisteredClaimNames.Name, usuario.Nombre),
                 new Claim(JwtRegisteredClaimNames.FamilyName, usuario.Apellido),
             };
+
+            if (roles != null && roles.Count > 0)
+            {
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role)); //Se les pasan dos parámetros: el tipo de claim que va crear y el valor que el claim va tener
+                }
+            }
 
             var credentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256Signature);
 

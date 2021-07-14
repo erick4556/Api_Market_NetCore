@@ -7,14 +7,16 @@ namespace WebApi.Dtos
 {
     public class RegistrarDto
     {
-        public String Email { get; set; }
+        public string Email { get; set; }
 
-        public String Username { get; set; }
+        public string Username { get; set; }
 
-        public String Nombre { get; set; }
+        public string Nombre { get; set; }
 
-        public String Apellido { get; set; }
+        public string Apellido { get; set; }
 
-        public String Password { get; set; }
+        public string Imagen { get; set; }
+
+        public string Password { get; set; }
     }
 }

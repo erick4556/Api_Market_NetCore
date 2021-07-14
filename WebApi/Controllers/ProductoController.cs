@@ -2,6 +2,7 @@
 using Core.Entities;
 using Core.Interfaces;
 using Core.Specifications;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -70,12 +71,13 @@ namespace WebApi.Controllers
             return _mapper.Map<Producto, ProductoDto>(producto);//Quiero que la entidad se convierta a una clase Dto, el objeto que se va transformar es producto
         }
 
+        [Authorize(Roles = "ADMIN")]
         [HttpPost]
         public async Task<ActionResult<Producto>> post(Producto producto)
         {
-           var resultado = await _productoRepository.add(producto);
-             
-            if(resultado == 0)
+            var resultado = await _productoRepository.add(producto);
+
+            if (resultado == 0)
             {
                 throw new Exception("No se insertó el producto");
             }
@@ -84,13 +86,14 @@ namespace WebApi.Controllers
 
         }
 
+        [Authorize(Roles = "ADMIN")]
         [HttpPut("{id}")]
         public async Task<ActionResult<Producto>> put(int id, Producto producto)
         {
             producto.Id = id;
             var resultado = await _productoRepository.update(producto);
 
-            if(resultado == 0)
+            if (resultado == 0)
             {
                 throw new Exception("No se pudo actualizar el producto");
             }

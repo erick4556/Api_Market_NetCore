@@ -7,6 +7,8 @@ namespace WebApi.Dtos
 {
     public class UsuarioDto
     {
+        public string Id { get; set; }
+
         public string Email { get; set; }
 
         public string Username { get; set; }
@@ -18,6 +20,8 @@ namespace WebApi.Dtos
         public string Imagen { get; set; }
 
         public string Token { get; set; }
+
+        public bool Admin { get; set; }
 
     }
 }

@@ -11,9 +11,10 @@ namespace BusinessLogic.Data
     public class SeguridadDbContextData
     {
 
-        public static async Task SeedUser(UserManager<Usuario> userManager)
+        public static async Task SeedUser(UserManager<Usuario> userManager, RoleManager<IdentityRole> roleManager)
         {
-            if (!userManager.Users.Any()){ //Si no tiene ningún registro
+            if (!userManager.Users.Any())
+            { //Si no tiene ningún registro
                 var usuario = new Usuario
                 {
                     Nombre = "Carl",
@@ -29,8 +30,17 @@ namespace BusinessLogic.Data
                     }
                 };
 
-               await userManager.CreateAsync(usuario, "Password123!");
+                await userManager.CreateAsync(usuario, "Password123!");
 
+            }
+
+            if (!roleManager.Roles.Any())
+            {
+                var role = new IdentityRole
+                {
+                    Name = "ADMIN"
+                };
+                await roleManager.CreateAsync(role);
             }
         }
 

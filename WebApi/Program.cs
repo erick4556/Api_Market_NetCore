@@ -30,9 +30,10 @@ namespace WebApi
                     await MarketDbContextData.CargarDataAsync(context,loggerFactory);
 
                     var userManager = services.GetRequiredService<UserManager<Usuario>>();
+                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
                     var identityContext = services.GetRequiredService<SeguridadDbContext>();
                     await identityContext.Database.MigrateAsync();
-                    await SeguridadDbContextData.SeedUser(userManager);
+                    await SeguridadDbContextData.SeedUser(userManager, roleManager);
                 }
                 catch (Exception e)
                 {

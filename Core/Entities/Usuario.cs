@@ -15,7 +15,7 @@ namespace Core.Entities
 
         public Direccion Direccion { get; set; }
 
-        public String Imagen { get; set; }
+        public string Imagen { get; set; }
 
     }
 }

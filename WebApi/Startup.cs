@@ -2,6 +2,7 @@ using BusinessLogic.Data;
 using BusinessLogic.Logic;
 using Core.Entities;
 using Core.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -41,6 +43,7 @@ namespace WebApi
 
             var builder = services.AddIdentityCore<Usuario>();
             builder = new IdentityBuilder(builder.UserType, builder.Services); //Para generar las tablas desde el modelo de identity core
+            builder.AddRoles<IdentityRole>();
             builder.AddEntityFrameworkStores<SeguridadDbContext>();
             builder.AddSignInManager <SignInManager<Usuario>>();
 
@@ -74,6 +77,8 @@ namespace WebApi
                 var configuration = ConfigurationOptions.Parse(Configuration.GetConnectionString("Redis"), true); //true para que ignore los orígnes desconocidos
                 return ConnectionMultiplexer.Connect(configuration);
             });
+
+            services.TryAddSingleton<ISystemClock, SystemClock>(); //SystemClock permite agregar la hora en la que se agrega un nuevo record
 
             services.AddTransient<IProductoRepository, ProductoRepository>();
             services.AddControllers();
