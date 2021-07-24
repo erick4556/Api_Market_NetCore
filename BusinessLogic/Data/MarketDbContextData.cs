@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using Core.Entities.OrdenCompra;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BusinessLogic.Data
 {
-   public class MarketDbContextData
+    public class MarketDbContextData
     {
         public static async Task CargarDataAsync(MarketDbContext context, ILoggerFactory loggerFactory)
         {
@@ -20,9 +21,9 @@ namespace BusinessLogic.Data
                 {
                     var marcaData = File.ReadAllText("../BusinessLogic/CargarData/marca.json");
                     var marcas = JsonSerializer.Deserialize<List<Marca>>(marcaData); //Le de un formato tipo list, una colección de la clase marca 
-                    foreach(var marca in marcas)
+                    foreach (var marca in marcas)
                     {
-                       context.Marca.Add(marca);
+                        context.Marca.Add(marca);
                     }
 
                     await context.SaveChangesAsync();//Insertar la data en la tabla
@@ -52,9 +53,21 @@ namespace BusinessLogic.Data
                     await context.SaveChangesAsync();//Insertar la data en la tabla
                 }
 
+                if (!context.TipoEnvios.Any())
+                {
+                    var tipoEnvioData = File.ReadAllText("../BusinessLogic/CargarData/tipoenvio.json");
+                    var tipoEnvios = JsonSerializer.Deserialize<List<TipoEnvio>>(tipoEnvioData);
+                    foreach (var tipoEnvio in tipoEnvios)
+                    {
+                        context.TipoEnvios.Add(tipoEnvio);
+                    }
+
+                    await context.SaveChangesAsync();
+                }
+
 
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 var logger = loggerFactory.CreateLogger<MarketDbContextData>(); //Logger se aplique sobre la clase actual, MarketDbContextData
                 logger.LogError(e.Message);
