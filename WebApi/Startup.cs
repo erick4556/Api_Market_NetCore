@@ -40,6 +40,7 @@ namespace WebApi
         {
 
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IOrdenCompraService, OrdenCompraService>();
 
             var builder = services.AddIdentityCore<Usuario>();
             builder = new IdentityBuilder(builder.UserType, builder.Services); //Para generar las tablas desde el modelo de identity core

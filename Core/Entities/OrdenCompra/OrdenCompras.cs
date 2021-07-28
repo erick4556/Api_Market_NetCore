@@ -12,10 +12,9 @@ namespace Core.Entities.OrdenCompra
         {
         }
 
-        public OrdenCompras(string compradorEmail, DateTimeOffset ordenCompraFecha, Direccion direccionEnvio, TipoEnvio tipoEnvio, IReadOnlyList<OrdenItem> orderItems, decimal subTotal)
+        public OrdenCompras(string compradorEmail, Direccion direccionEnvio, TipoEnvio tipoEnvio, IReadOnlyList<OrdenItem> orderItems, decimal subTotal)
         {
             CompradorEmail = compradorEmail;
-            OrdenCompraFecha = ordenCompraFecha;
             DireccionEnvio = direccionEnvio;
             TipoEnvio = tipoEnvio;
             OrderItems = orderItems;
@@ -28,14 +27,14 @@ namespace Core.Entities.OrdenCompra
 
         public Direccion DireccionEnvio { get; set; }
 
-        public TipoEnvio TipoEnvio {get; set;}
+        public TipoEnvio TipoEnvio { get; set; }
 
         public IReadOnlyList<OrdenItem> OrderItems { get; set; }
 
         public decimal SubTotal { get; set; }
 
         public OrdenStatus Status { get; set; } = OrdenStatus.Pendiente;
-        
+
         public string PagoIntentoId { get; set; }
 
         public decimal GetTotal()

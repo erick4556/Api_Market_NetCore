@@ -15,5 +15,7 @@ namespace WebApi.Dtos
 
         public string CodigoPostal { get; set; }
 
+        public string Pais { get; set; }
+
     }
 }

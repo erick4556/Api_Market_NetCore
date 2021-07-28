@@ -10,7 +10,6 @@ namespace Core.Entities
     public class Producto : ClaseBase //La clase Producto se herede desde ClaseBase
     {
        
-        
         public string Nombre { get; set; }
 
         public string Descripcion { get; set; }
