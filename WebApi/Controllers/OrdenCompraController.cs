@@ -15,7 +15,7 @@ using WebApi.Errors;
 namespace WebApi.Controllers
 {
 
-    [Authorize]  
+    [Authorize]
     public class OrdenCompraController : BaseApiController
     {
         private readonly IOrdenCompraService _ordenCompraService;
@@ -27,7 +27,7 @@ namespace WebApi.Controllers
             _mapper = mapper;
         }
 
-        
+
         [HttpPost]
         public async Task<ActionResult<OrdenCompras>> addOrdenCompra(OrdenCompraDto ordeCompraDto)
         {
@@ -43,6 +43,35 @@ namespace WebApi.Controllers
             {
                 return Ok(ordenCompra);
             }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IReadOnlyList<OrdenCompras>>> getOrdenCompras()
+        {
+            var email = HttpContext.User?.Claims?.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value; //Se obtiene este email desde el token que envía el usuario
+            var ordenCompras = await _ordenCompraService.getOrdenComprasByUserEmail(email);
+            return Ok(ordenCompras);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<OrdenCompras>> getOrdenComprasById(int id)
+        {
+            var email = HttpContext.User?.Claims?.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value; //Se obtiene este email desde el token que envía el usuario
+            var ordenCompra = await _ordenCompraService.getOrdenComprasById(id, email);
+            if (ordenCompra == null)
+            {
+                return NotFound(new CodeErrorResponse(404, "No se encontró la orden de compra"));
+            }
+            else
+            {
+                return ordenCompra;
+            }
+        }
+
+        [HttpGet("tipoEnvio")]
+        public async Task<ActionResult<IReadOnlyList<TipoEnvio>>> getTipoEnvio()
+        {
+            return Ok(await _ordenCompraService.getTipoEnvios());
         }
 
     }

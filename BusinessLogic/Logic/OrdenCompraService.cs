@@ -1,6 +1,7 @@
 ﻿using Core.Entities;
 using Core.Entities.OrdenCompra;
 using Core.Interfaces;
+using Core.Specifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,17 +13,13 @@ namespace BusinessLogic.Logic
     public class OrdenCompraService : IOrdenCompraService
     {
 
-        private readonly IGenericRepository<OrdenCompras> _ordenComprasRepository;
-        private readonly IGenericRepository<Producto> _productoRepository;
         private readonly ICarritoCompraRepository _carritoCompraRepository;
-        private readonly IGenericRepository<TipoEnvio> _tipoEnvioRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public OrdenCompraService(IGenericRepository<OrdenCompras> ordenComprasRepository, IGenericRepository<Producto> productoRepository, ICarritoCompraRepository carritoCompraRepository, IGenericRepository<TipoEnvio> tipoEnvioRepository)
+        public OrdenCompraService(ICarritoCompraRepository carritoCompraRepository, IUnitOfWork unitOfWork)
         {
-            _ordenComprasRepository = ordenComprasRepository;
-            _productoRepository = productoRepository;
             _carritoCompraRepository = carritoCompraRepository;
-            _tipoEnvioRepository = tipoEnvioRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<OrdenCompras> addOrdenCompra(string compradorEmail, int tipoEnvio, string carritoId, Core.Entities.OrdenCompra.Direccion direccion)
@@ -33,35 +30,53 @@ namespace BusinessLogic.Logic
 
             foreach (var item in carritoCompra.Items)
             {
-                var productoItem = await _productoRepository.getByIdAsync(item.Id);
+                var productoItem = await _unitOfWork.Repository<Producto>().getByIdAsync(item.Id);
                 var itemOrdenado = new ProductoItemOrdenado(productoItem.Id, productoItem.Nombre, productoItem.Image);
                 var ordenItem = new OrdenItem(itemOrdenado, productoItem.Precio, item.Cantidad);
                 items.Add(ordenItem);
             }
 
-            var tipoEnvioEntity = await _tipoEnvioRepository.getByIdAsync(tipoEnvio);
+            var tipoEnvioEntity = await _unitOfWork.Repository<TipoEnvio>().getByIdAsync(tipoEnvio);
 
             var subTotal = items.Sum(item => item.Precio * item.Cantidad);
 
             var ordenCompra = new OrdenCompras(compradorEmail, direccion, tipoEnvioEntity, items, subTotal);
 
-            return ordenCompra;
+            _unitOfWork.Repository<OrdenCompras>().addEntity(ordenCompra);
+
+            var resultado = await _unitOfWork.Complete();
+
+            if (resultado <= 0)
+            {
+                return null;
+            }
+            else
+            {
+                await _carritoCompraRepository.deleteCarritoCompra(carritoId);
+                return ordenCompra;
+            }
+
 
         }
 
-        public Task<OrdenCompras> getOrdenComprasById(int id, string email)
+        public async Task<OrdenCompras> getOrdenComprasById(int id, string email)
         {
-            throw new NotImplementedException();
+            var specification = new OrdenCompraWithItemsSpecification(id, email);
+
+            return await _unitOfWork.Repository<OrdenCompras>().getByIdWithSpec(specification);
         }
 
-        public Task<IReadOnlyList<OrdenCompras>> getOrdenComprasByUserEmail(string email)
+        public async Task<IReadOnlyList<OrdenCompras>> getOrdenComprasByUserEmail(string email)
         {
-            throw new NotImplementedException();
+            var specification = new OrdenCompraWithItemsSpecification(email);
+
+            return await _unitOfWork.Repository<OrdenCompras>().getAllWithSpec(specification);
+
         }
 
-        public Task<IReadOnlyList<TipoEnvio>> getTipoEnvios()
+        public async Task<IReadOnlyList<TipoEnvio>> getTipoEnvios()
         {
-            throw new NotImplementedException();
+            return await _unitOfWork.Repository<TipoEnvio>().getAllAsync();
         }
     }
 }

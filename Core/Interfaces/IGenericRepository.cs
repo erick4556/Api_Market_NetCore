@@ -17,5 +17,11 @@ namespace Core.Interfaces
         Task<int> countAsync(ISpecification<T> spec);
         Task<int> add(T entity);
         Task<int> update(T entity);
+
+        void addEntity(T Entity);
+
+        void updateEntity(T Entity);
+
+        void deleteEntity(T Entity);
     }
 }

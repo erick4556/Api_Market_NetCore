@@ -63,5 +63,24 @@ namespace BusinessLogic.Logic
             _context.Entry(entity).State = EntityState.Modified; //Actualice los valores y no los duplique en la bd
             return await _context.SaveChangesAsync();
         }
+
+        //Los cambios para agregar un nuevo elemento van estar en memoria hasta que se dispare el context UnitOfWork
+        public void addEntity(T Entity)
+        {   
+            
+            _context.Set<T>().Attach(Entity);
+            //El SaveChangesAsync(); lo va hacer el UnitOfWork
+        }
+
+        public void updateEntity(T Entity)
+        {
+            _context.Set<T>().Attach(Entity);
+            _context.Entry(Entity).State = EntityState.Modified; //Actualice los valores y no los duplique en la bd
+        }
+
+        public void deleteEntity(T Entity)
+        {
+            _context.Set<T>().Remove(Entity);
+        }
     }
 }
